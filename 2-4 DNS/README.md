@@ -1,127 +1,129 @@
-# Ch 2 Application Layer
+# 2-4 DNS
 
-네트워크 애플리케이션들의 예시
+## DNS란?
 
-- 이메일
-- 웹
-- 텍스트 메시지
-- 원격 로그인
-- P2P
+DNS(domain name system) 즉 logical host name(ex www.naver.com)과 IP주소(binary일수도 numeric일수도)를 translation하는 것.
 
-네트워크 애플리케이션 개발
+- Distributed Database implemeted in hierarchy of many name servers(DNS servers)
+- Application-layer Protocol: hosts와 name server가 name을 resolve하기 위해서 communicate한다.
+  - core internet function은 application-layer protocol로 implement된다.
 
-- 네트워크 애플리케이션을 개발할 때, [end systems](https://en.wikipedia.org/wiki/End_system) (네트워크에 연결된 기기) 위에서만 작동하면 되며, 네트워크의 코어 디바이스는 신경쓰지 않아도 됩니다.
-- 예컨대 웹 애플리케이션은 브라우저에서만 잘 작동하면 됩니다.
-- 라우터는 각 애플리케이션의 행동에 관여하지 않습니다. (관여하지 않아도 됩니다)
-- 추상화된 네트워크는 애플리케이션 개발 및 전파를 용이하게 합니다.
+### DNS services
 
-## 애플리케이션 아키텍쳐
+- Host aliasing: A host with a complicated hostname can have one or more alias names. 즉 여러개의 hostname을 갖을 수 있다. Canonical과 alias name이다. 예를 들어 relay1.west-coast.enterprise.com은 enterprise.com, www.enterprise.com으로 aliase할 수 있는데 전자를 canonical(original) 후자를 alias names라 부른다.
+- Mail server aliasing: Bob이 네이버로 메일을 작성할 때 Bob의 e-mail address는 simple하게 bob@naver.com이 될 것이다. 하지만 naver mail server의 hostname은 더 복잡할 것이다. 이때 DNS가 canonical hostname을 얻기위해서 필요하고 IP address 또한 얻는다.
+- Load distribution: 검색하면 load balancing이라 나옴. 이해하기론 naver.com(alias name)가 여러 IP address로 연결되어있다.
 
-- Client-server arch.
-- Peer-to-peer (P2P)
+### Why not centralize DNS?
 
-### Client-server architecture
+- Single point of failure
+- Traffic volume
+- Distant centralized database
+- Maintenance
 
-![client-server-architecture](resources/client-server-architecture.png)
+즉 doesn't scale
 
-Server
+## DNS: a distributed, hierarchical database
 
-- 항상 켜져있고 접근 가능합니다 (always-on).
-- 고정 IP 주소를 사용합니다.
-- 스케일링을 위한 데이터 센터가 필요합니다.
+![DNS_hierarchical_database](resources/DNS_hierarchical%20database.png)
 
-Client
+만약 client가 www.amazon.com이라는 IP를 원하면 다음과 같은 단계를 거친다.
 
-- 서버와 커뮤니케이션합니다. 클라이언트끼리 직접 소통하지 않습니다.
-- 상시 연결되어 있지 않을 수도 있습니다. (intermittently)
-- 동적 IP 주소를 사용할 수도 있습니다.
+- Client queries(요청들) root server to find com DNS server
+- Client queries .com DNS server to get amazon.com DNS server
+- Client queries amazon.com DNS server to get IP address for www.amazon.com
 
-### P2P architecture
+즉 3개의 DNS server가 계층구조를 이루고 있다.
 
-![p2p-architecture](resources/p2p-architecture.png)
+### Root name(DNS) servers
 
-- Always-on server가 존재하지 않습니다.
-- Peer, 즉 임의의 end system끼리 직접 커뮤니케이션합니다.
-- Peer가 요청을 보내면 다른 peer가 응답합니다.
-- Self scalability: Peer의 존재 자체가 곧 서버이고 capacity입니다. 즉 새로운 peer가 추가되면 그것만으로도 이미 스케일링되었다는 것입니다.
-- Downside: Peer들은 마찬가지로 상시 연결되어 있지 않을 수도 있고, 동적 IP 주소를 사용할 수도 있습니다. 이는 관리의 복잡성을 야기합니다.
+- 전 세계에 13개의 root server만 존재한다.
 
-## Processes commuicating
+### TLD servers(top-level-domain)
 
-프로세스 간 커뮤니케이션
+- responsible for com, org, net ect and all top-level country domains, e.g.: uk, fr, ca, kr
+- Network Solutions maintains servers for .com TLD
+- Educause for .edu TLD
 
-- 같은 호스트 안에 있는 두 프로세스는 OS에서 정의한 IPC 등으로 커뮤니케이션할 수 있습니다.
-- 다른 호스트에 있는 두 프로세스는 네트워크를 통해 커뮤니케이션할 수 있습니다.
-- 이때 client와 server, P2P의 peer는 프로세스입니다. Client는 요청을 보내어 커뮤니케이션을 시작하고, server는 요청을 받아 응답합니다. Peer는 두 속성을 모두 갖습니다.
+### Authoritative servers
 
-### Socket
+- 회사의 own DNS server이다.
+- Can be maintained by organization or service proovider
 
-![socket](resources/socket.png)
+### Local DNS servers
 
-- OS는 소켓(socket)이라는 인터페이스를 제공해 두 프로세스가 네트워크를 통해 커뮤니케이션할 수 있게 합니다.
-- 프로세스는 소켓이 열려있는 동안 연결된 프로세스와 메세지를 주고받을 수 있습니다.
-- 내부 동작은 OS 및 네트워크 저수준 계층에서 처리합니다.
-- 프로세스는 여러 개의 소켓을 가질 수 있습니다.
+- 계층에 속하지 않는 서버이다.
+- [ISP](https://ko.wikipedia.org/wiki/%EC%9D%B8%ED%84%B0%EB%84%B7_%EC%84%9C%EB%B9%84%EC%8A%A4_%EC%A0%9C%EA%B3%B5%EC%9E%90)가 local DNS 서버를 갖고 있다.
+- Host가 DNS query를 만들면 query가 local DNS server에 보내진다.
+- Acts as proxy('대리'의 의미로 빠른 액세스나 안전한 통신등을 확보하기 위한 중계서버), forwards query into hierarchy
 
-### Addressing processes
+## Example
 
-- IP 주소로 호스트 디바이스를 특정할 수 있습니다. 대신 한 호스트의 여러 프로세스 중 하나를 특정할 수는 없습니다.
-- **포트 번호**를 사용해 프로세스를 특정할 수 있습니다. 16비트 숫자입니다. (0~65535)
-- 몇몇 포트 번호는 [특정 프로토콜에 예약 또는 할당](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers)되어 있습니다. 예컨대 80번은 HTTP, 25번은 SMTP 메일 프로토콜입니다.
+간단하게 보면 이렇게 된다.
+![간단한_조직도](resources/example_simple.png)
 
-### App-layer protocol defines
+좀 더 자세하게 강의안에 있는 그림은
+![강의안](resources/example_lecture_1.png)
 
-프로토콜은 메세지에 대해 다음 요소들을 정의하는 규칙입니다.
+## Recursive query의 경우 다음과 같다.
 
-- types: request, response 등
-- syntax: 메세지의 특정 필드 파싱 규칙 등
-- semantics: 각 필드의 의미 등
-- rules: 메세지를 주고받는 순서나 방법 등
+Caching을 이용한다. 즉 어느 정도 시간 전에 어떠한 host가 예를 들면 dns.nyu.edu의 IP address (hostname은 cnn.com)을 요청했다고 가정하면 만약 내가 dns.nyu.edu의 IP 주소를 요청하면 caching에 의해 local DNS server에서 바로 cnn.com에 대한 IP address를 반환할 것이다.
 
-대표적인 프로토콜
+cached entry들은 may be out-of-date이다. 즉 name host가 IP address를 바꾸면 Internet-wide는 모든 TTL이 끝나기 전에 모를 것이다? (이거 해석이 잘 안돼)
 
-- Open protocols: RFC 표준으로 정의된 프로토콜입니다. 표준을 따르면 생기는 [상호운용성](https://ko.wikipedia.org/wiki/%EC%83%81%ED%98%B8%EC%9A%B4%EC%9A%A9%EC%84%B1)이 (interoperability) 큰 장점입니다. 예컨대 HTTP, SMTP, FTP 등이 있습니다.
-- Proprietary protocols: 특정 회사나 단체에서 정의하고 소유한 프로토콜입니다. 예컨대 Skype 등이 있습니다.
+![Recursive](resources/example_recursive.png)
 
-### What transport service does an app need?
+## DNS records
 
-- Data integrity: 데이터가 손상되지 않고 전달되어야 합니다. 파일 전송 등의 몇몇 앱들은 100% reliability를 요구합니다. 다만 음성전화 등의 몇몇 앱들은 loss-tolerant 합니다.
-- Timing: 몇몇 앱들은 데이터가 저지연으로 (low delay) 전달되어야 합니다.
-- Throughput: 몇몇 앱들은 명시적으로 최소 [throughput 또는 bandwidth](https://darkstart.tistory.com/141)를 요구합니다. TCP 표준에는 최소 throuput이 보장되어 있지 않습니다. 몇몇 elastic app들은 이에 민감하지 않습니다.
-- Security: 몇몇 앱들은 암호화 등을 요구합니다. 마찬가지로 TCP 표준에는 보안이 보장되어 있지 않습니다.
+DNS: distributed database storing resource records(RR)
 
-![transport-service-requirements](resources/transport-service-requirements.png)
+![DNS_records](resources/DNS_record.png)
 
-## Internet transport protocols services
+4가지 타입이 존재한다.
 
-### TCP
+- type = A: name = hostname(relay1.bar.foo.com), value = IP address
+- type = NS(name server): name = domain(foo.com), value is hostname(dns.foo.com) of authoritative name server for this domain.
+- type = CNAME: name = alias name, value = canonical name for a hostname.
+- type = MX: value = name of mailserver associated with name (mail.bar.foo.com)
 
-- Reliable transport
-- Flow control (control by receiver)
-- Congestion control (throttle by sender)
-- 제공하지 않는 것들: timing, minimum throughput guarantee, security
-- Connection-oriented: 3-way handshake로 연결을 맺습니다.
+## 아니 근데 어려운게 이름이 계속 바뀌어서 나오는데 내가 이해하기론 name server = DNS server이고 hostname이 domain인건가? 이게 alias name인거고
 
-### UDP
+## Inserting records into DNS
 
-- _Unreliable_ data transfer
-- 제공하지 않는 것들: reliability, flow control, congestion control, timing, minimum throughput guarantee, security
-- 하지만 때로는 UDP를 사용합니다.
+만약 Network Utopia라는 새로운 회사가 있다고 가정하면
 
-![internet-apps-tcp-or-udp](resources/internet-apps-tcp-or-udp.png)
+- Register name networkutopia.com at DNS registrar
 
-### Securing TCP
+  - Provide names, IP addressed of authoritative name server(primary and secondary)
+  - registrar inserts two RRs into .com TLD server:
 
-SSL (Secure Sockets Layer)
+        (networkytopia.com, dns1.networkutopia.com, NS)
+        (dns1.networkutopia.com, 212.212.212.1, A)
 
-- 암호화된 TCP 연결을 제공하는 프로토콜입니다.
-- Data integrity 또한 제공합니다.
-- End-point authentication 또한 제공합니다.
+  - Create authoritative server type A record for www.networkutopia.com; type NS record for networkutopia.com
 
-SSL은 애플리케이션 계층에 있습니다.
+type A는 우리의 Web server를 저장하는거고 type MX는 mail server를 저장하는 것
 
-- 앱을 SSL 라이브러리를 이용해 구현하면, SSL 라이브러리는 TCP에 상호작용합니다.
+## Attacking DNS
 
-SSL socket API
+### DDoS attacks
 
-- Cleartext passwords
+- Bombard root servers with traffic
+  - not successful to date
+  - traffic filtering
+  - local DNS servers cache IPs of TLD servers. allowing root server bypass
+- Bombard TLD servers
+  - Potentially more dangerous
+
+### Redirect attacks
+
+- Man-in-middle
+  - Intercept queries
+- DNS poisoning
+  - Send bogus relies to DNS server, which caches
+  - 다르게 Cache Poisoning이라 불리기도 하는데 cache에 저장된 IP 주소를 조작해 자신이 원하는 주소로 보내는 것
+
+### Exploit DNS for DDoS
+
+- 대량의 traffic을 보내서 서버 및 주변 인프라에 액세스 할 수 없도록 하는 공격이다.
+- 수업에서 without computer IP라 하셨는데 이게 뭔지 잘 모르겠음
