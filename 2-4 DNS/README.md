@@ -42,8 +42,8 @@ DNS(domain name system) 즉 logical host name(ex www.naver.com)과 IP주소(bina
 ### TLD servers(top-level-domain)
 
 - responsible for com, org, net ect and all top-level country domains, e.g.: uk, fr, ca, kr
-- Network Solutions maintains servers for .com TLD
-- Educause for .edu TLD
+- Network Solutions(회사이름) maintains servers for .com TLD
+- Educause(회사이름) for .edu TLD
 
 ### Authoritative servers
 
@@ -60,16 +60,20 @@ DNS(domain name system) 즉 logical host name(ex www.naver.com)과 IP주소(bina
 ## Example
 
 간단하게 보면 이렇게 된다.
+
 ![간단한_조직도](resources/example_simple.png)
 
 좀 더 자세하게 강의안에 있는 그림은
+
 ![강의안](resources/example_lecture_1.png)
 
 ## Recursive query의 경우 다음과 같다.
 
 Caching을 이용한다. 즉 어느 정도 시간 전에 어떠한 host가 예를 들면 dns.nyu.edu의 IP address (hostname은 cnn.com)을 요청했다고 가정하면 만약 내가 dns.nyu.edu의 IP 주소를 요청하면 caching에 의해 local DNS server에서 바로 cnn.com에 대한 IP address를 반환할 것이다.
 
-cached entry들은 may be out-of-date이다. 즉 name host가 IP address를 바꾸면 Internet-wide는 모든 TTL이 끝나기 전에 모를 것이다? (이거 해석이 잘 안돼)
+cached entry들은 may be out-of-date이다. 즉 name host가 IP address를 바꾸면 Internet-wide는 모든 TTL(cache 유지 시간)이 끝나기 전에 모를 것이다? (이거 해석이 잘 안돼)
+
+TTL이 만약 5분이면, 5분이 지나기 전에 name host에 연결된 IP address가 바뀌면 문제가 된다!
 
 ![Recursive](resources/example_recursive.png)
 
@@ -81,9 +85,11 @@ DNS: distributed database storing resource records(RR)
 
 4가지 타입이 존재한다.
 
+name = key이 name 바탕으로 mapping되는 value를 찾겠다. 이 mapping을 record라 부르고.
+
 - type = A: name = hostname(relay1.bar.foo.com), value = IP address
-- type = NS(name server): name = domain(foo.com), value is hostname(dns.foo.com) of authoritative name server for this domain.
-- type = CNAME: name = alias name, value = canonical name for a hostname.
+- type = NS(name server): name = domain(foo.com), value is hostname(dns.foo.com) -> (sub domain) of authoritative name server for this domain.
+- type = CNAME: name = alias name, value = canonical name for a hostname. -> 상위 domain이 바뀌는 경우 (ex. youtube.com, youtu.be) 외부 resource에 연결.
 - type = MX: value = name of mailserver associated with name (mail.bar.foo.com)
 
 ## 아니 근데 어려운게 이름이 계속 바뀌어서 나오는데 내가 이해하기론 name server = DNS server이고 hostname이 domain인건가? 이게 alias name인거고
@@ -92,7 +98,7 @@ DNS: distributed database storing resource records(RR)
 
 만약 Network Utopia라는 새로운 회사가 있다고 가정하면
 
-- Register name networkutopia.com at DNS registrar
+- Register name networkutopia.com at DNS registrar(Network Solutions)
 
   - Provide names, IP addressed of authoritative name server(primary and secondary)
   - registrar inserts two RRs into .com TLD server:
