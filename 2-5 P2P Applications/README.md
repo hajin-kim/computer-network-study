@@ -10,35 +10,45 @@
 ## File distribution: in comparison with client-server
 
 - 업로드 및 다운로드 capacity는 한정된 리소스입니다.
-- 크기가 $F$인 파일을 $N$개의 client에게 배포해야 할 때, $u_s$를 server의 upload capacity(혹은 upload rate), $d_i (i = 1, 2, ..., N)$를 client의 download capacity라고 합시다.
+- 크기가 $F$인 파일을 $N$개의 client에게 배포해야 할 때 다음을 정의합시다.
+  - $u_s$: server의 upload capacity(혹은 upload rate)
+  - $u_i (i = 1, 2, ..., N)$: client의 upload capacity
+  - $d_i (i = 1, 2, ..., N)$: client의 download capacity
 
 ### File distribution time in client-server
 
 - **Server transmission**은 파일을 순차적으로 N번 발생합니다.
   - 파일을 1번 전송할 때, $F/u_s$의 시간이 걸립니다.
-  - 파일을 $N$번 전송할 때, $NF/u_s$의 시간이 걸립니다.
+  - 파일을 $N$번 전송할 때, 다음의 시간이 걸립니다.
+  - $NF/u_s$
 - **Client**는 각자가 서버로부터 파일을 온전히 다운로드합니다.
-  - $d_{min}$을 가장 다운로드가 느린 client의 download rate라고 합시다.
-  - 최악의 client가 다운로드할 때, $F/d_{min}$의 시간이 걸립니다.
   - 보통 최악의 상황을 가정하므로 이를 지표로 삼겠습니다.
-- Time to distribute F to N clients: $D_{C-S} \ge \max\{NF/u_s, F/d_{min}\}$
+  - $d_{min}$을 가장 다운로드가 느린 client의 download rate라고 합시다.
+  - 최악의 client가 다운로드할 때, 다음의 시간이 걸립니다.
+  - $F/d_{min}$
+- Time to distribute F to N clients
+  - $$D_{C-S} \ge \max \{NF/u_s, F/u_{min}\}$$
   - 이때 C-S는 Client-Server를 의미합니다.
   - 서버의 upload capacity, 가장 느린 client의 download capacity 중 더 오래 걸리는 시간입니다.
-  - *$N$이 커진다면...* 서버의 업로드 부하가 선형 증가합니다.
+  - $N$이 커진다면... 서버의 업로드 부하가 선형 증가합니다.
 
 ### File distribution time in P2P
 
 - **Server transmission**은 F개의 비트에 대해 적어도 1번씩 발생해야 합니다.
   - 그래야 peer들의 비트를 조합하면 1개의 완성본이 나옵니다.
-  - 파일을 1번 전송할 때, $F/u_s$의 시간이 걸립니다.
+  - 파일을 1번 전송할 때, 다음의 시간이 걸립니다.
+  - $F/u_s$
 - **각 peer**는 F개의 비트를 온전히 다운로드해야 합니다.
-  - 최악의 client가 다운로드할 때, $F/d_{min}$의 시간이 걸립니다.
+  - 최악의 client가 다운로드할 때, 다음의 시간이 걸립니다.
+  - $F/d_{min}$
 - **N개의 peer**는 N개의 파일을 N개의 peer와 server로부터 다운로드받을 수 있습니다.
-  - N개의 파일 업로드가 최대 $(u_s + \sum d_i)$의 rate로 이루어지므로, $NF/(u_s + \sum d_i)$의 시간이 걸립니다.
-  - 이때 다운로드는 이미 위에서 최악의 경우를 상정했으므로 고려하지 않습니다.
-- Time to distribute F to N clients: $D_{P2P} \ge \max\{F/u_s, F/d_{min}, NF/(u_s + \sum d_i)\}$
+  - 이때 다운로드는 이미 위에서 최악의 경우를 상정했으므로 고려하지 않고, 업로드 시간에 집중합시다..
+  - N개의 peer 및 서버가 N개의 파일을 업로드할 때, $(u_s + \sum u_i)$의 rate로 이루어지므로, 다음의 시간이 걸립니다.
+  - $NF/(u_s + \sum u_i)$
+- Time to distribute F to N peers
+  - $$D_{P2P} \ge \max \{F/u_s, F/d_{min}, NF/(u_s + \sum u_i)\}$$
   - 서버의 upload capacity, 가장 느린 client의 download capacity, 서버 및 peer들의 평균 upload capacity 중 더 오래 걸리는 시간입니다.
-  - *$N$이 커진다면...* peer 숫자도 많아지므로 업로드 부하가 선형 증가하지 않습니다.
+  - $N$이 커진다면... peer 숫자도 많아지므로 업로드 부하가 선형 증가하지 않습니다.
 
 ### File distribution: P2P vs C-S
 
