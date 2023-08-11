@@ -126,8 +126,12 @@ Sender
 
 ![rdt-3.0-performance-1](resources/rdt-3.0-performance-1.png)
 
-- $D_{trans}$ : 실제 packet transmission에 소요되는 시간
-- $U_{sender}$ : Utilization. 이 식을 유의깊게 봐둡시다.
+- L: Packet length
+- R: Link rate. 즉, 1초에 link할 수 있는 bit 수
+- $D_{trans}$: 실제 packet link에 소요되는 시간
+- $U_{sender}$: Utilization. 이 식을 유의깊게 봐둡시다.
+- RTT: Round trip time. 패킷을 link하기 완료한 시점부터 응답 패킷을 완전히 받는데까지 걸리는 시간. 즉, sender의 손을 떠나고 기다리기만 하는 시간
+- 숫자들은 예시이지만 일반적으로 reasonable한 값들입니다.
 
 ![rdt-3.0-performance-2](resources/rdt-3.0-performance-2.png)
 
